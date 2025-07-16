@@ -1,0 +1,11 @@
+x adding hopper should trigger the transfers
+
+x removing the hopper should cancel the transfers
+
+x once hopper is full enters endless loop
+
+x a space freeing up in the hopper (for example after adding chest) should trigger the transfers
+
+x test two players with ender chest is managed when transfering
+
+x double-check the old use cases still work, like adding a bunch of items at once
