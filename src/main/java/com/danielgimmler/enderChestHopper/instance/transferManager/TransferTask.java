@@ -1,4 +1,4 @@
-package com.danielgimmler.enderChestHopper.manager;
+package com.danielgimmler.enderChestHopper.instance.transferManager;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
 import com.danielgimmler.enderChestHopper.db.EnderChestLocation;
