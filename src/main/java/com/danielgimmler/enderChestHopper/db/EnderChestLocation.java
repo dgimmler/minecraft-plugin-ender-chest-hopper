@@ -9,12 +9,11 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Hopper;
 import org.bukkit.configuration.file.YamlConfiguration;
-
 import java.io.IOException;
 import java.util.Map;
 
 public class EnderChestLocation {
-    EnderChestHopper main;
+    public EnderChestHopper main;
 
     public final String world;
     public final int x;
@@ -48,8 +47,16 @@ public class EnderChestLocation {
         );
     }
 
+    // GETTERS
+    // -----------------------------------------------------------------------------------------------------------------
+    public String getKey() { return getKey(world, x, y, z); }
+    public static String getKey(String world, int x, int y, int z) { return world + x + y + z; }
+
     // HELPERS
     // -----------------------------------------------------------------------------------------------------------------
+
+    public boolean chestSaved() { return chestSaved(main.getEnderChestLocationManager(), getKey()); }
+    public static boolean chestSaved(EnderChestLocationManager mgr, String k) { return mgr.getYamlFile().contains(k); }
 
     public static boolean isHopperBelow(Location location) {
         Location below = location.clone().subtract(0, 1, 0);
@@ -77,10 +84,10 @@ public class EnderChestLocation {
     }
 
     public static EnderChestLocation getEnderChestLocation(EnderChestHopper main, String world, int x, int y, int z) {
-        YamlConfiguration file = YamlConfiguration.loadConfiguration(main.file);
+        YamlConfiguration file = main.getEnderChestLocationManager().getYamlFile();
 
-        String k = world + x + y + z;
-        if (!file.contains(k)) return null;
+        String k = getKey(world, x, y, z);
+        if (!chestSaved(main.getEnderChestLocationManager(), k)) return null;
 
         int storedX = file.getInt(k + ".x");
         int storedY = file.getInt(k + ".y");
@@ -92,11 +99,10 @@ public class EnderChestLocation {
 
     public static EnderChestLocation getEnderChestLocation(EnderChestHopper main, String k) throws IOException {
         String errorMsg = "Yaml file not found!";
-        if (main.file == null) throw new IllegalStateException(errorMsg);
-        if (!main.file.exists()) throw new IllegalStateException(errorMsg);
+        if (!main.getEnderChestLocationManager().fileExists()) throw new IllegalStateException(errorMsg);
 
-        YamlConfiguration file = YamlConfiguration.loadConfiguration(main.file);
-        if (!file.contains(k)) throw new IllegalStateException("Ender chest not found at key: " + k);
+        YamlConfiguration file = main.getEnderChestLocationManager().getYamlFile();
+        if (!chestSaved(main.getEnderChestLocationManager(), k)) throw new IllegalStateException("Ender chest not found at key: " + k);
 
         String world = file.getString(k + ".world");
         int x = file.getInt(k + ".x");
@@ -111,12 +117,11 @@ public class EnderChestLocation {
     // -----------------------------------------------------------------------------------------------------------------
 
     public void saveLocation() throws IOException {
-        if (main.file == null) return;
-        if (!main.file.exists()) return;
+        EnderChestLocationManager mgr = main.getEnderChestLocationManager();
+        if (!mgr.fileExists()) return;
 
         // log location in config file
-        YamlConfiguration file = YamlConfiguration.loadConfiguration(main.file);
-
+        YamlConfiguration file = mgr.getYamlFile();
         file.set("" + world + x + y + z, Map.ofEntries(
                 Map.entry("x", x),
                 Map.entry("y", y),
@@ -126,7 +131,7 @@ public class EnderChestLocation {
         ));
 
         try {
-            file.save(main.file);
+            file.save(mgr.getFile());
             main.logger.info("Saved location of Ender Chest to file");
         } catch (IOException ex) {
             throw ex;
@@ -134,16 +139,15 @@ public class EnderChestLocation {
     }
 
     public void removeLocation() throws IOException {
-        if (main.file == null) return;
-        if (!main.file.exists()) return;
+        EnderChestLocationManager mgr = main.getEnderChestLocationManager();
+        if (!mgr.fileExists()) return;
 
-        YamlConfiguration file = YamlConfiguration.loadConfiguration(main.file);
-
-        String k = world + x + y + z;
+        YamlConfiguration file = mgr.getYamlFile();
+        String k = getKey();
 
         if (file.contains(k)) {
             file.set(k, null);
-            file.save(main.file);
+            file.save(mgr.getFile());
         } else {
             throw new IllegalStateException("Ender chest not found: " + x + " " + y + " " + z + " in world " + world + ". Key: " + k);
         }
@@ -154,16 +158,15 @@ public class EnderChestLocation {
         will be destroyed and replaced, and the oonBlockPlace and onBlockRemove events will handle it
      */
     public void updateHopperValue(boolean newHopperValue) throws IOException {
-        if (main.file == null) return;
-        if (!main.file.exists()) return;
+        EnderChestLocationManager mgr = main.getEnderChestLocationManager();
+        if (!mgr.fileExists()) return;
 
-        YamlConfiguration file = YamlConfiguration.loadConfiguration(main.file);
-
-        String k = world + x + y + z; // Must exactly match the original save format
+        YamlConfiguration file = mgr.getYamlFile();
+        String k = getKey();
 
         if (file.contains(k)) {
             file.set(k + ".hopper", newHopperValue);
-            file.save(main.file);
+            file.save(mgr.getFile());
         } else {
             throw new IllegalStateException("Ender chest not found: " + x + " " + y + " " + z + " in world " + world + ". Key: " + k);
         }

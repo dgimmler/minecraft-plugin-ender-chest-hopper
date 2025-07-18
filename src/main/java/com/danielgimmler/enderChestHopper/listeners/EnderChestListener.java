@@ -2,7 +2,6 @@ package com.danielgimmler.enderChestHopper.listeners;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
 import com.danielgimmler.enderChestHopper.db.EnderChestLocation;
-import com.danielgimmler.enderChestHopper.manager.TransferManager;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -11,29 +10,24 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
 import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
-import org.bukkit.scheduler.BukkitTask;
 
 import java.io.IOException;
 import java.util.*;
 
 public class EnderChestListener implements Listener {
     protected EnderChestHopper main;
-    private final Map<UUID, BukkitTask> debouncedTransfers;
-    private final long DEBOUNCE_DELAY_TICKS;
-    private TransferManager transferManager;
 
     public EnderChestListener(EnderChestHopper main) {
         this.main = main;
-        this.debouncedTransfers = new HashMap<>();
-        this.DEBOUNCE_DELAY_TICKS = 10L; // 0.5 seconds
-        this.transferManager = new TransferManager(main);
     }
 
     @EventHandler
@@ -42,24 +36,34 @@ public class EnderChestListener implements Listener {
             return;
 
         for (Player player : Bukkit.getOnlinePlayers())
-            transferManager.handleTransfer(player);
+            main.getTransferManager().handleTransfer(player);
     }
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent e) {
+        Player player = e.getPlayer();
+
+        // create and store player Config
+        if (!main.playerConfigIsSet(player))
+            main.createPlayerConfig(player);
+
+        // create and store gui for player
+        if (!main.playerGuiIsSet(player))
+            main.createPlayerGui(player);
+
         // begin any transfers for any chests user has
-        transferManager.handleTransfer(e.getPlayer());
+        main.getTransferManager().handleTransfer(player);
     }
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent e) {
+    public void onHopperInteract(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player player)) return;
         if (!player.isOnline()) return;
 
         Inventory clicked = e.getInventory();
         if (!clicked.equals(player.getEnderChest())) return;
 
-        transferManager.handleTransfer(player);
+        main.getTransferManager().handleTransfer(player);
     }
 
     @EventHandler
@@ -82,6 +86,34 @@ public class EnderChestListener implements Listener {
         } else if (e.getBlock().getType() == Material.HOPPER) {
             handleHopperBreak(blockLocation);
         }
+    }
+
+    @EventHandler
+    public void onEnderChestRightClick(PlayerInteractEvent e) {
+        Player player = e.getPlayer();
+        UUID playerId = player.getUniqueId();
+
+        // only handle this event if a player left-clicked an ender chest
+        if (!player.isSneaking()) return;
+        if (e.getAction() != Action.RIGHT_CLICK_BLOCK) return;
+        if (e.getClickedBlock() == null || e.getClickedBlock().getType() != Material.ENDER_CHEST) return;
+        if (e.getItem() != null) return;
+
+        e.setCancelled(true);
+
+        // open gui for player
+        main.getPlayerGui(playerId).openGui();
+    }
+
+    @EventHandler
+    public void onGuiInteract(InventoryClickEvent e) {
+        if (!(e.getWhoClicked() instanceof Player player)) return;
+        if (!player.isOnline()) return;
+        if (e.getInventory() != main.getPlayerGui(player).playerGui) return;
+        if (e.getCurrentItem() == null)  return;
+
+        e.setCancelled(true);
+        main.getPlayerGui(player).handleItemClick(e.getRawSlot());
     }
 
     // HELPER FUNCTIONS
@@ -123,7 +155,7 @@ public class EnderChestListener implements Listener {
         try {
             toggleHopperPlace(blockLocation, true);
             // begin any transfers for any chests user has
-            transferManager.handleTransfer(e.getPlayer());
+            main.getTransferManager().handleTransfer(e.getPlayer());
         } catch(IOException ex) {
             main.logger.severe("Unable to update hopper status for ender chest");
             main.logger.severe(ex.getMessage());

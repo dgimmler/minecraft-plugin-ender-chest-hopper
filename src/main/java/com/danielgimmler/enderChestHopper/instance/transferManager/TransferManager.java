@@ -1,9 +1,8 @@
-package com.danielgimmler.enderChestHopper.manager;
+package com.danielgimmler.enderChestHopper.instance.transferManager;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
 import com.danielgimmler.enderChestHopper.db.EnderChestLocation;
 import org.bukkit.Material;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -83,9 +82,13 @@ public class TransferManager {
 
             @Override
             public void run() {
-                // cancel runnable player is offline or task list is empty (processed)
+                // cancel runnable player is offline, has hopper transfers toggled off or task list is empty (processed)
                 if (!player.isOnline() || !currentlyProcessing.contains(playerId)) {
                     cancelTask(this, playerId, "Player " + playerName + " is offline. Cancelling ender chest hopper.");
+
+                    return;
+                } else if (!main.getPlayerConfig(player).areHopperTransfersOn()) {
+                    cancelTask(this, playerId, "Player " + playerName + " is toggled hopper transfers off. Cancelling ender chest hopper.");
 
                     return;
                 } else if (transferTasks.isEmpty()) {
@@ -161,24 +164,9 @@ public class TransferManager {
         return false;
     }
 
-    public List<EnderChestLocation> getEnderChests() throws IOException {
-        String errorMsg = "Yaml file not found!";
-        if (main.file == null) throw new IllegalStateException(errorMsg);
-        if (!main.file.exists()) throw new IllegalStateException(errorMsg);
-
-        YamlConfiguration file = YamlConfiguration.loadConfiguration(main.file);
-        Set<String> keys = file.getKeys(false);
-
-        List<EnderChestLocation> list = new ArrayList<>();
-        for (String k : keys)
-            list.add(EnderChestLocation.getEnderChestLocation(main, k));
-
-        return list;
-    }
-
     public List<EnderChestLocation> getEnderChestsWithHopper() throws IOException {
         List<EnderChestLocation> list = new ArrayList<>();
-        for (EnderChestLocation chest : getEnderChests()) {
+        for (EnderChestLocation chest : main.getEnderChestLocationManager().getEnderChests()) {
             if (chest.hasHopper)
                 list.add(chest);
         }
@@ -186,7 +174,4 @@ public class TransferManager {
         return list;
     }
 }
-
-// HOPPER CLASS
-// -----------------------------------------------------------------------------------------------------------------
 

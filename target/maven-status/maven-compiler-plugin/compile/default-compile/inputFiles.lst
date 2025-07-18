@@ -1,6 +1,9 @@
 C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\db\EnderChestLocation.java
 C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\EnderChestHopper.java
+C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\instance\gui\EnderChestGui.java
+C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\instance\gui\EnderChestGuiMenuItem.java
+C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\instance\playerConfig\PlayerConfig.java
+C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\instance\transferManager\TransferManager.java
+C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\instance\transferManager\TransferTask.java
 C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\listeners\EnderChestListener.java
 C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\Logger.java
-C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\manager\TransferManager.java
-C:\Users\Daniel\Projects\minecraft\EnderChestHopper\src\main\java\com\danielgimmler\enderChestHopper\manager\TransferTask.java
