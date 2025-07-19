@@ -1,4 +1,4 @@
-package com.danielgimmler.enderChestHopper.db;
+package com.danielgimmler.enderChestHopper.db.enderChestLocation;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
 import org.bukkit.Bukkit;
@@ -130,12 +130,8 @@ public class EnderChestLocation {
                 Map.entry("hopper", hasHopper)
         ));
 
-        try {
-            file.save(mgr.getFile());
-            main.logger.info("Saved location of Ender Chest to file");
-        } catch (IOException ex) {
-            throw ex;
-        }
+        file.save(mgr.getFile());
+        main.logger.info("Saved location of Ender Chest to file");
     }
 
     public void removeLocation() throws IOException {
