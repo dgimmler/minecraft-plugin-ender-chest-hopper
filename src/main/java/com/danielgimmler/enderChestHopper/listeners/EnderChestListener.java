@@ -1,7 +1,7 @@
 package com.danielgimmler.enderChestHopper.listeners;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
-import com.danielgimmler.enderChestHopper.db.EnderChestLocation;
+import com.danielgimmler.enderChestHopper.db.enderChestLocation.EnderChestLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -44,12 +44,16 @@ public class EnderChestListener implements Listener {
         Player player = e.getPlayer();
 
         // create and store player Config
-        if (!main.playerConfigIsSet(player))
-            main.createPlayerConfig(player);
+        if (!main.getPlayerConfigManager().playerConfigIsSet(player))
+            main.getPlayerConfigManager().createPlayerConfig(player);
+        else {
+            main.getPlayerConfigManager().getPlayerConfig(player).setPlayer(player);
+            main.getPlayerConfigManager().loadPlayerConfig(player);
+        }
 
         // create and store gui for player
-        if (!main.playerGuiIsSet(player))
-            main.createPlayerGui(player);
+        if (!main.getGuiManager().playerGuiIsSet(player))
+            main.getGuiManager().createPlayerGui(player);
 
         // begin any transfers for any chests user has
         main.getTransferManager().handleTransfer(player);
@@ -102,18 +106,18 @@ public class EnderChestListener implements Listener {
         e.setCancelled(true);
 
         // open gui for player
-        main.getPlayerGui(playerId).openGui();
+        main.getGuiManager().getPlayerGui(playerId).openGui();
     }
 
     @EventHandler
     public void onGuiInteract(InventoryClickEvent e) {
         if (!(e.getWhoClicked() instanceof Player player)) return;
         if (!player.isOnline()) return;
-        if (e.getInventory() != main.getPlayerGui(player).playerGui) return;
+        if (e.getInventory() != main.getGuiManager().getPlayerGui(player).playerGui) return;
         if (e.getCurrentItem() == null)  return;
 
         e.setCancelled(true);
-        main.getPlayerGui(player).handleItemClick(e.getRawSlot());
+        main.getGuiManager().getPlayerGui(player).handleItemClick(e.getRawSlot());
     }
 
     // HELPER FUNCTIONS

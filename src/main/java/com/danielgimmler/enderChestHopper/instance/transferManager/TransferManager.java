@@ -1,7 +1,7 @@
 package com.danielgimmler.enderChestHopper.instance.transferManager;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
-import com.danielgimmler.enderChestHopper.db.EnderChestLocation;
+import com.danielgimmler.enderChestHopper.db.enderChestLocation.EnderChestLocation;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
@@ -87,7 +87,7 @@ public class TransferManager {
                     cancelTask(this, playerId, "Player " + playerName + " is offline. Cancelling ender chest hopper.");
 
                     return;
-                } else if (!main.getPlayerConfig(player).areHopperTransfersOn()) {
+                } else if (!main.getPlayerConfigManager().getPlayerConfig(player).areHopperTransfersOn()) {
                     cancelTask(this, playerId, "Player " + playerName + " is toggled hopper transfers off. Cancelling ender chest hopper.");
 
                     return;

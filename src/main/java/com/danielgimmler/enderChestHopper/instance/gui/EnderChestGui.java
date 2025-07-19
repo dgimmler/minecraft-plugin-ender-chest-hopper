@@ -68,7 +68,7 @@ public class EnderChestGui {
                 break;
 
             case TOGGLE_HOPPER:
-                main.getPlayerConfig(player).toggleHopperTransfers();
+                main.getPlayerConfigManager().getPlayerConfig(player).toggleHopperTransfers();
 
                 break;
 

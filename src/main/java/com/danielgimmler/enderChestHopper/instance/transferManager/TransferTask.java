@@ -1,7 +1,7 @@
 package com.danielgimmler.enderChestHopper.instance.transferManager;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
-import com.danielgimmler.enderChestHopper.db.EnderChestLocation;
+import com.danielgimmler.enderChestHopper.db.enderChestLocation.EnderChestLocation;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
