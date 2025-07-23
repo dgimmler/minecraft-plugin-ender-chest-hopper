@@ -30,4 +30,9 @@ public class EnderChestLocationManager extends ConfigManagerBase {
         return list;
     }
 
+    public void removeEnderChestLocation(EnderChestLocation chest) throws IOException {
+        chest.removeLocation();
+
+        this.enderChests.remove(chest.getKey());
+    }
 }

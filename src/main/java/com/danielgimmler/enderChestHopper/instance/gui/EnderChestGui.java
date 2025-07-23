@@ -1,9 +1,14 @@
 package com.danielgimmler.enderChestHopper.instance.gui;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
+import com.danielgimmler.enderChestHopper.db.enderChestLocation.EnderChestLocation;
+import com.danielgimmler.enderChestHopper.db.playerConfig.EnderChestConfig;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
@@ -11,11 +16,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.*;
+import java.util.function.Consumer;
 
 public class EnderChestGui {
 
     private EnderChestHopper main;
     private Player player;
+    private EnderChestLocation lastClickedEnderChest;
     public Inventory playerGui;
 
     public EnderChestGui(EnderChestHopper main, Player player) {
@@ -38,12 +45,20 @@ public class EnderChestGui {
             playerGui.setItem(i, frame);
     }
 
+    public void setLastClickedEnderChest(Location location) { setLastClickedEnderChest(new EnderChestLocation(main, location)); }
+    public void setLastClickedEnderChest(EnderChestLocation chest) { this.lastClickedEnderChest = chest; }
+    private void unsetLastClickedEnderChestLocation() { this.lastClickedEnderChest = null; }
+
     private void setMenuItem(Inventory gui, EnderChestGuiMenuItem i) {
         Map.Entry<Integer, ItemStack> item = getMenuItem(i);
         gui.setItem(item.getKey(), item.getValue());
     }
 
     private Map.Entry<Integer, ItemStack> getMenuItem(EnderChestGuiMenuItem i) {
+        return new AbstractMap.SimpleEntry<>(i.getSlot(), getMenuItemstack(i));
+    }
+
+    private ItemStack getMenuItemstack(EnderChestGuiMenuItem i) {
         ItemStack item = new ItemStack(i.getMaterial());
 
         ItemMeta itemMeta = item.getItemMeta();
@@ -51,7 +66,7 @@ public class EnderChestGui {
         itemMeta.lore(i.getLore());
         item.setItemMeta(itemMeta);
 
-        return new AbstractMap.SimpleEntry<>(i.getSlot(), item);
+        return item;
     }
 
     public void openGui() {
@@ -80,9 +95,18 @@ public class EnderChestGui {
                 break;
 
             case RENAME_CHEST:
-                player.sendMessage(
-                    Component.text("Rename chest not implemented")
-                    .color(NamedTextColor.RED));
+                if (lastClickedEnderChest != null)
+                    getAnvilGuiTextInput(player, chestName -> {
+                        main.getPlayerConfigManager().getPlayerConfig(player).renameEnderChest(lastClickedEnderChest.getKey(), chestName, player.getUniqueId());
+                        unsetLastClickedEnderChestLocation();
+                    });
+                else {
+                    String errorMsg = "Unable to establish Ender Chest Location";
+                    player.sendMessage(
+                        Component.text(errorMsg + ". Error has been logged.")
+                        .color(NamedTextColor.RED));
+                    main.logger.severe("Error for player " + player.getName() + ": " + errorMsg);
+                }
 
                 break;
 
@@ -106,4 +130,25 @@ public class EnderChestGui {
 
         player.closeInventory();
     }
+
+    public void getAnvilGuiTextInput(Player player, Consumer<String> callback) {
+        Bukkit.getScheduler().runTask(main, () -> {
+            new AnvilGUI.Builder()
+                .plugin(main)
+                .title("Ender Chest Name")
+                .text("Enter name here...")
+                .itemLeft(getMenuItemstack(EnderChestGuiMenuItem.CLOSE_ANVIL))
+                .itemOutput(getMenuItemstack(EnderChestGuiMenuItem.CONFIRM))
+                .onClick((slot, snapshot) -> {
+                    if (slot != AnvilGUI.Slot.OUTPUT)
+                        return List.of(AnvilGUI.ResponseAction.close());
+
+                    String input = snapshot.getText();
+                    callback.accept(input); // return result to caller
+                    return List.of(AnvilGUI.ResponseAction.close());
+                })
+                .open(player);
+        });
+    }
+
 }

@@ -22,6 +22,14 @@ public enum EnderChestGuiMenuItem {
     BORDER(-1, Material.LIME_STAINED_GLASS_PANE, NamedTextColor.GRAY, "", new ArrayList<>()),  // - - border
     EMPTY_SLOT(-1, Material.AIR, NamedTextColor.GRAY, "", new ArrayList<>()),                  // 0 - empty slot
     CLOSE(0, Material.BARRIER, NamedTextColor.RED, "Close", new ArrayList<>()),                // X - closes GUI
+    CLOSE_ANVIL(0, Material.BARRIER,
+        NamedTextColor.RED,
+        "Close",
+        Arrays.asList("Cancel and close")),                                                              // XA - Anvil GUI: closes GUI
+    CONFIRM(0, Material.LIME_CONCRETE,
+        NamedTextColor.GREEN,
+        "Confirm",
+        Arrays.asList("Confirm name and close")),                                                        // CA - Anvil GUI: Confirms rename
     TOGGLE_HOPPER(11, Material.HOPPER,
         NamedTextColor.BLUE,
     "Toggle Hopper Transfers",
@@ -37,7 +45,7 @@ public enum EnderChestGuiMenuItem {
             "OFF - No Ender Chest will transfer inventory into any hopper (default)",
             "ON  - Ender Chest will transfer to hoppers general toggle is also ON")),                    // C - turn hopper transfers on specific chest on or off
     RENAME_CHEST(13, Material.BIRCH_SIGN,
-        NamedTextColor.BLACK,
+        NamedTextColor.WHITE,
     "Rename this Chest",
         Arrays.asList("Give this chest a unique, human-readable identifier")),                           // R - rename specific chest
     FORGET_CHEST(14, Material.TNT,
