@@ -105,6 +105,14 @@ public class PlayerConfig {
 
     public boolean areHopperTransfersOn() { return this.hopperTransfersOn; }
 
+    public boolean isHopperEnabledForChest(EnderChestLocation chest) {
+        String k = chest.getKey();
+
+        if (!chests.containsKey(k)) return false;
+        if (!areHopperTransfersOn()) return false;
+        return chests.get(k).isHopperEnabled();
+    }
+
     public void toggleHopperTransfers() {
         if (!hopperTransfersOn) {
             sendPlayerMessage(
@@ -122,6 +130,35 @@ public class PlayerConfig {
         }
 
         savePlayerConfig();
+    }
+
+    public void toggleHopperTransfersForChest(EnderChestLocation chestLocation, UUID playerId) {
+        String k = chestLocation.getKey();
+        EnderChestConfig chestConfig = chests.get(k);
+
+        if (chestConfig == null) {
+            chests.put(k, new EnderChestConfig(k, false));
+            savePlayerConfig(playerId);
+
+            return;
+        }
+
+        if (!chestConfig.isHopperEnabled()) {
+            sendPlayerMessage(
+                Component.text("Turned hopper transfers ON for this chest. Ender Chest will now transfer to hoppers if you have Ender Chest transfers enabled globally.")
+                    .color(NamedTextColor.GREEN));
+
+            chestConfig.enableHopper();
+            main.getTransferManager().handleTransfer(player);
+        } else {
+            sendPlayerMessage(
+                Component.text("Turned hopper transfers OFF for this chest. Ender Chest will not transfer to hoppers even if you have Ender Chest transfers enabled globally.")
+                    .color(NamedTextColor.RED));
+
+            chestConfig.disableHopper();
+        }
+
+        savePlayerConfig(playerId);
     }
 
     public void renameEnderChest(String chestKey, String chestName, UUID playerId) {

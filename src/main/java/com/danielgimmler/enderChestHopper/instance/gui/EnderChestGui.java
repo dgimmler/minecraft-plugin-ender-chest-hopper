@@ -88,9 +88,7 @@ public class EnderChestGui {
                 break;
 
             case TOGGLE_CHEST:
-                player.sendMessage(
-                    Component.text("Chest toggle not implemented")
-                    .color(NamedTextColor.RED));
+                main.getPlayerConfigManager().getPlayerConfig(player).toggleHopperTransfersForChest(lastClickedEnderChest, player.getUniqueId());
 
                 break;
 
