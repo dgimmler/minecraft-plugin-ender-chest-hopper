@@ -2,9 +2,12 @@ package com.danielgimmler.enderChestHopper.db.playerConfig;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
 import com.danielgimmler.enderChestHopper.db.ConfigManagerBase;
+import com.danielgimmler.enderChestHopper.db.enderChestLocation.EnderChestLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+
+import java.io.IOException;
 import java.util.*;
 
 public class PlayerConfigManager extends ConfigManagerBase {
@@ -48,6 +51,16 @@ public class PlayerConfigManager extends ConfigManagerBase {
         if (!playerConfigIsSet(player)) return;
 
         playerConfigs.get(player.getUniqueId()).loadPlayerConfig(player);
+    }
+
+    public void removeChestFromPlayerConfigs(EnderChestLocation chest) {
+        for ( UUID i : playerConfigs.keySet()) {
+            try {
+                playerConfigs.get(i).removeChestFromPlayerConfig(chest);
+            } catch (IOException e) {
+                main.logger.severe("Unable to remove chest from player " + playerConfigs.get(i).getPlayerName() + " config. Already removed?");
+            }
+        }
     }
 
     // HELPERS

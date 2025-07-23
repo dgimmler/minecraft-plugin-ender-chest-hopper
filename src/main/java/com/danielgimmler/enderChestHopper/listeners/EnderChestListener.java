@@ -2,6 +2,8 @@ package com.danielgimmler.enderChestHopper.listeners;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
 import com.danielgimmler.enderChestHopper.db.enderChestLocation.EnderChestLocation;
+import com.danielgimmler.enderChestHopper.db.playerConfig.PlayerConfig;
+import com.danielgimmler.enderChestHopper.instance.gui.EnderChestGui;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -105,8 +107,17 @@ public class EnderChestListener implements Listener {
 
         e.setCancelled(true);
 
+        // add chest to player config if not there already
+        PlayerConfig playerConfig = main.getPlayerConfigManager().getPlayerConfig(player);
+        EnderChestLocation chest = new EnderChestLocation(main,e.getClickedBlock().getLocation());
+        if (!playerConfig.isEnderChestConfigSet(chest))
+            playerConfig.setEnderChestConfig(chest);
+
         // open gui for player
-        main.getGuiManager().getPlayerGui(playerId).openGui();
+        EnderChestGui playerGui =  main.getGuiManager().getPlayerGui(playerId);
+
+        playerGui.setLastClickedEnderChest(e.getClickedBlock().getLocation());
+        playerGui.openGui();
     }
 
     @EventHandler
@@ -176,11 +187,13 @@ public class EnderChestListener implements Listener {
         EnderChestLocation chest = new EnderChestLocation(main, blockLocation);
 
         try {
-            chest.removeLocation();
+            main.getEnderChestLocationManager().removeEnderChestLocation(chest);
         } catch (IOException ex) {
             main.logger.severe("Unable to remove Ender Chest from log file. Already removed?");
             main.logger.severe(ex.getMessage());
         }
+
+        main.getPlayerConfigManager().removeChestFromPlayerConfigs(chest);
     }
 
     private void handleHopperBreak(Location blockLocation) {

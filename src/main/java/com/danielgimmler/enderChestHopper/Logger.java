@@ -6,6 +6,11 @@ public class Logger {
     public final java.util.logging.Logger baseLogger;
     private final String prefix;
 
+    public Logger(EnderChestHopper main) {
+        this.baseLogger = main.getLogger();
+        this.prefix = "";
+    }
+
     public Logger(EnderChestHopper main, String prefix) {
         this.baseLogger = main.getLogger();
         this.prefix = "[" + prefix + "] ";

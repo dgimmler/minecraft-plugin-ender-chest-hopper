@@ -21,7 +21,7 @@ public final class EnderChestHopper extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        this.logger = new Logger(this, "EnderChestHopper");
+        this.logger = new Logger(this);
 
         logger.info(
                 "\n\n--------------------------------------------------------------------------------" +

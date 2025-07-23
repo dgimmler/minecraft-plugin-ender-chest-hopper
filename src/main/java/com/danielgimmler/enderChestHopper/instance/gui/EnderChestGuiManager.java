@@ -1,6 +1,7 @@
 package com.danielgimmler.enderChestHopper.instance.gui;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
+import com.danielgimmler.enderChestHopper.db.enderChestLocation.EnderChestLocation;
 import org.bukkit.entity.Player;
 
 import java.util.HashMap;
