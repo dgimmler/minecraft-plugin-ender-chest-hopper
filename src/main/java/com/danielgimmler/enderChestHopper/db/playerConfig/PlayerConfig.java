@@ -74,6 +74,19 @@ public class PlayerConfig {
         return playerName;
     }
 
+    public void listChests(Player player) {
+        player.sendMessage(Component.text("You have the following chests configured:"));
+        player.sendMessage(Component.text(""));
+
+        for (String k : chests.keySet()) {
+            EnderChestConfig chest = chests.get(k);
+
+            player.sendMessage(Component.text("ID: " + chest.getName()));
+            player.sendMessage(Component.text("Hopper Enabled: " + chest.isHopperEnabled()));
+            player.sendMessage(Component.text(""));
+        }
+    }
+
     // SETTERS
     // -----------------------------------------------------------------------------------------------------------------
 

@@ -128,9 +128,7 @@ public class EnderChestGui {
                 break;
 
             case LIST_CHESTS:
-                player.sendMessage(
-                    Component.text("List chests not implemented")
-                    .color(NamedTextColor.RED));
+                main.getPlayerConfigManager().getPlayerConfig(player).listChests(player);
 
                 break;
 
