@@ -15,6 +15,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.io.IOException;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -89,6 +90,7 @@ public class EnderChestGui {
 
             case TOGGLE_CHEST:
                 main.getPlayerConfigManager().getPlayerConfig(player).toggleHopperTransfersForChest(lastClickedEnderChest, player.getUniqueId());
+                unsetLastClickedEnderChestLocation();
 
                 break;
 
@@ -109,9 +111,19 @@ public class EnderChestGui {
                 break;
 
             case FORGET_CHEST:
-                player.sendMessage(
-                    Component.text("Forget chest not implemented")
-                    .color(NamedTextColor.RED));
+                try {
+                    main.getPlayerConfigManager().getPlayerConfig(player).removeChestFromPlayerConfig(lastClickedEnderChest, player.getUniqueId().toString());
+
+                    player.sendMessage(
+                        Component.text("Removed this chest from your configuration. It will not transfer anything.")
+                            .color(NamedTextColor.RED));
+                } catch (IOException ex) {
+                    player.sendMessage(
+                        Component.text("Error saving updated chest config, transfers may not behave as expected. Error has been logged.")
+                            .color(NamedTextColor.RED));
+                    main.logger.severe("Error removing chest config. Error: " + ex.getMessage());
+                }
+                unsetLastClickedEnderChestLocation();
 
                 break;
 
