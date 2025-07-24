@@ -82,7 +82,15 @@ public class TransferManager {
 
             @Override
             public void run() {
-                TransferTask task = transferTasks.get(taskIndex);
+                TransferTask task = null;
+                try {
+                    task = transferTasks.get(taskIndex);
+                } catch(IndexOutOfBoundsException ex) {
+                    cancelTask(this, playerId, "Error running task. Error: " + ex.getMessage());
+
+                    return;
+                }
+                if (task == null) return;
 
                 // cancel runnable player is offline, has hopper transfers toggled off or task list is empty (processed)
                 if (!player.isOnline() || !currentlyProcessing.contains(playerId)) {
@@ -90,7 +98,7 @@ public class TransferManager {
 
                     return;
                 } else if (!main.getPlayerConfigManager().getPlayerConfig(player).isHopperEnabledForChest(task.chest)) {
-                    cancelTask(this, playerId, "Player " + playerName + " is toggled hopper transfers off. Cancelling ender chest hopper.");
+                    cancelTask(this, playerId, "Player " + playerName + " toggled hopper transfers off. Cancelling ender chest hopper.");
 
                     return;
                 } else if (transferTasks.isEmpty()) {

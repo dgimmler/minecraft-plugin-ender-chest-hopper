@@ -25,14 +25,17 @@ public class ConfigManagerBase {
     private File ensureFile() {
         if (file != null) return file;
 
-        this.file = new File(main.getDataFolder(), fileName);
+        File dataFolder = main.getDataFolder();
+        if (!dataFolder.exists())
+            dataFolder.mkdirs(); // Ensure the plugin folder exists
 
+        this.file = new File(dataFolder, fileName);
         if (file.exists()) return file;
 
         try {
             file.createNewFile();
         } catch(IOException e) {
-            main.logger.severe("Can't load " + fileName + " file. Error:");
+            main.logger.severe("Can't load " + dataFolder.getName() + "/" + fileName + " file. Error:");
             main.logger.severe(e.getMessage());
 
             return file;

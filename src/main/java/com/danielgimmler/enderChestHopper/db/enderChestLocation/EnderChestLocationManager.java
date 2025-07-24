@@ -2,6 +2,7 @@ package com.danielgimmler.enderChestHopper.db.enderChestLocation;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
 import com.danielgimmler.enderChestHopper.db.ConfigManagerBase;
+import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.IOException;
 import java.util.*;
@@ -28,6 +29,10 @@ public class EnderChestLocationManager extends ConfigManagerBase {
             list.add(EnderChestLocation.getEnderChestLocation(main, k));
 
         return list;
+    }
+
+    public boolean enderChestIsSaved(Location location) {
+        return enderChests.get(new EnderChestLocation(main, location).getKey()) != null;
     }
 
     public void removeEnderChestLocation(EnderChestLocation chest) throws IOException {

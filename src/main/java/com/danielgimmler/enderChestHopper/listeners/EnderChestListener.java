@@ -77,7 +77,8 @@ public class EnderChestListener implements Listener {
         Location blockLocation = e.getBlock().getLocation();
 
         if (e.getBlockPlaced().getType() == Material.ENDER_CHEST) {
-            handleEnderChestPlace(e, blockLocation);
+            if (!handleEnderChestPlace(e.getPlayer(), blockLocation))
+                e.setCancelled(true);
         } else if (e.getBlockPlaced().getType() == Material.HOPPER) {
             handleHopperPlace(e, blockLocation);
         }
@@ -107,9 +108,17 @@ public class EnderChestListener implements Listener {
 
         e.setCancelled(true);
 
+        Location chestLocation = e.getClickedBlock().getLocation();
+
+        // save chest location if it hasn't been logged yet
+        if (!main.getEnderChestLocationManager().enderChestIsSaved(chestLocation)) {
+            if (!handleEnderChestPlace(e.getPlayer(), chestLocation))
+                e.setCancelled(true);
+        }
+
         // add chest to player config if not there already
         PlayerConfig playerConfig = main.getPlayerConfigManager().getPlayerConfig(player);
-        EnderChestLocation chest = new EnderChestLocation(main,e.getClickedBlock().getLocation());
+        EnderChestLocation chest = new EnderChestLocation(main,chestLocation);
         if (!playerConfig.isEnderChestConfigSet(chest))
             playerConfig.setEnderChestConfig(chest);
 
@@ -151,16 +160,19 @@ public class EnderChestListener implements Listener {
     // CHEST PLACE FUNCTIONS
     // -----------------------------------------------------------------------------------------------------------------
 
-    private void handleEnderChestPlace(BlockPlaceEvent e, Location blockLocation) {
+    private boolean handleEnderChestPlace(Player player, Location blockLocation) {
         try {
             EnderChestLocation chest = new EnderChestLocation(main, blockLocation);
             chest.saveLocation();
+
+            return true;
         } catch (IOException ex) {
             main.logger.severe("Unable to save block location");
             main.logger.severe(ex.getMessage());
 
-            e.getPlayer().sendMessage(ChatColor.RED + "Unable to place log location of Ender Chest, attached hopper may not work as expected. Error logged.");
-            e.setCancelled(true);
+            player.sendMessage(ChatColor.RED + "Unable to place log location of Ender Chest, attached hopper may not work as expected. Error logged.");
+
+            return false;
         }
     }
 
