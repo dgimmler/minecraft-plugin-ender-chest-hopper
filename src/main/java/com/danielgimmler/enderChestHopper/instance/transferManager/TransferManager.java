@@ -32,7 +32,8 @@ public class TransferManager {
     // SCHEDULE FUNCTIONS
     // -----------------------------------------------------------------------------------------------------------------
 
-    public void handleTransfer(Player player) {
+    public void handleTransfer(Player player, String calledFrom) {
+        main.logger.debug("handleTransfer called from: " + calledFrom);
         UUID playerId = player.getUniqueId();
 
         // Avoid collisions by not running additional tasks
@@ -128,20 +129,20 @@ public class TransferManager {
                 boolean transferred = task.run(chestSlot);
 
                 if (!transferred) {
-                    main.logger.info("hopper is full, trying next one if available...");
+                    main.logger.debug("hopper is full, trying next one if available...");
                     // try next hopper if this hopper is full
                     taskIndex++;
 
                     if (taskIndex >= transferTasks.size())
                         cancelTask(this, playerId, "No further ender chest with hopper available. Cancelling ender chest hopper.");
                 } else if (chestSlot >= enderChestInv.getMaxStackSize() || chestSlot < 0) {
-                    main.logger.info("Looped through all chest slots, going back to first slot...");
+                    main.logger.debug("Looped through all chest slots, going back to first slot...");
                     // loop back to first filled slot if all item stacks finish
                     chestSlot=0;
                 } else if (task.chestSlotIsEmpty(chestSlot)) {
                     // go to next chest slot if item stack depleted
                     chestSlot=task.getFirstFilledSlot(player);
-                    main.logger.info("Chest slot is empty, trying next slot: " + chestSlot);
+                    main.logger.debug("Chest slot is empty, trying next slot: " + chestSlot);
                 }
             }
         }.runTaskTimer(main, 0L, TRANSFER_INTERVAL_TICKS); // sleep by set ticks before running again
@@ -151,12 +152,12 @@ public class TransferManager {
     // -----------------------------------------------------------------------------------------------------------------
 
     public void cancelTask(BukkitRunnable runnable, UUID playerId, String msg) {
-        main.logger.info(msg);
+        main.logger.trace(msg);
         runnable.cancel();
         currentlyProcessing.remove(playerId);
         if (debouncedTransfers.get(playerId) != null) debouncedTransfers.get(playerId).cancel();
         debouncedTransfers.remove(playerId);
-        main.logger.info("active transfers after remove: " + debouncedTransfers);
+        main.logger.trace("active transfers after remove: " + debouncedTransfers);
     }
 
     public boolean playerHasEnderChest(Player player) {
@@ -176,7 +177,7 @@ public class TransferManager {
     public List<EnderChestLocation> getEnderChestsWithHopper() throws IOException {
         List<EnderChestLocation> list = new ArrayList<>();
         for (EnderChestLocation chest : main.getEnderChestLocationManager().getEnderChests()) {
-            if (chest.hasHopper)
+            if (chest.isHopperBelow())
                 list.add(chest);
         }
 

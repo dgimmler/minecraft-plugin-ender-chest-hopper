@@ -27,18 +27,28 @@ import java.util.*;
 
 public class EnderChestListener implements Listener {
     protected EnderChestHopper main;
+    private long lastHopperTransferCheck;
 
     public EnderChestListener(EnderChestHopper main) {
         this.main = main;
+        this.lastHopperTransferCheck = 0;
     }
 
     @EventHandler
     public void onHopperTransfer(InventoryMoveItemEvent e) {
+        // this is here right now to handle the event that a space frees up in the hopper
         if (e.getInitiator().getType() != InventoryType.HOPPER)
             return;
 
+        // rate limit this check to every 8 ticks (hopper transfer speed)
+        long now = System.nanoTime();
+        if (now - lastHopperTransferCheck < 8 * 50_000_000L) // 8 ticks * 50 ms = 400ms = 50M ns
+            return;
+        lastHopperTransferCheck = now;
+
         for (Player player : Bukkit.getOnlinePlayers())
-            main.getTransferManager().handleTransfer(player);
+            // handle transfer already has debounce delay
+            main.getTransferManager().handleTransfer(player, "EnderChestListener.onHopperTransfer");
     }
 
     @EventHandler
@@ -58,7 +68,7 @@ public class EnderChestListener implements Listener {
             main.getGuiManager().createPlayerGui(player);
 
         // begin any transfers for any chests user has
-        main.getTransferManager().handleTransfer(player);
+        main.getTransferManager().handleTransfer(player, "EnderChestListener.onPlayerJoin");
     }
 
     @EventHandler
@@ -69,7 +79,7 @@ public class EnderChestListener implements Listener {
         Inventory clicked = e.getInventory();
         if (!clicked.equals(player.getEnderChest())) return;
 
-        main.getTransferManager().handleTransfer(player);
+        main.getTransferManager().handleTransfer(player, "EnderChestListener.onHopperInteract");
     }
 
     @EventHandler
@@ -165,6 +175,9 @@ public class EnderChestListener implements Listener {
             EnderChestLocation chest = new EnderChestLocation(main, blockLocation);
             chest.saveLocation();
 
+            if (chest.isHopperBelow())
+                main.getChunkManager().addHopperChunk(blockLocation.getChunk());
+
             return true;
         } catch (IOException ex) {
             main.logger.severe("Unable to save block location");
@@ -182,7 +195,7 @@ public class EnderChestListener implements Listener {
         try {
             toggleHopperPlace(blockLocation, true);
             // begin any transfers for any chests user has
-            main.getTransferManager().handleTransfer(e.getPlayer());
+            main.getTransferManager().handleTransfer(e.getPlayer(), "EnderChestListener.handleHopperPlace");
         } catch(IOException ex) {
             main.logger.severe("Unable to update hopper status for ender chest");
             main.logger.severe(ex.getMessage());

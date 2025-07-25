@@ -133,7 +133,7 @@ public class PlayerConfig {
                 .color(NamedTextColor.GREEN));
 
             this.hopperTransfersOn = true;
-            main.getTransferManager().handleTransfer(player);
+            main.getTransferManager().handleTransfer(player, "TransferTask.toggleHopperTransfers");
         } else {
             sendPlayerMessage(
                 Component.text("Turned hopper transfers OFF. Ender Chests will not transfer to hoppers even if configured to do so.")
@@ -162,7 +162,7 @@ public class PlayerConfig {
                     .color(NamedTextColor.GREEN));
 
             chestConfig.enableHopper();
-            main.getTransferManager().handleTransfer(player);
+            main.getTransferManager().handleTransfer(player, "TransferTask.toggleHopperTransfersForChest");
         } else {
             sendPlayerMessage(
                 Component.text("Turned hopper transfers OFF for this chest. Ender Chest will not transfer to hoppers even if you have Ender Chest transfers enabled globally.")
@@ -246,7 +246,7 @@ public class PlayerConfig {
 
         try {
             file.save(mgr.getFile());
-            main.logger.info("Saved Player config to file");
+            main.logger.debug("Saved Player config to file");
         } catch (IOException ex) {
             String errorMsg = "Error Saving player config to file. Ender Chest configurations may not behave as expected";
 

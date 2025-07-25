@@ -2,13 +2,11 @@ package com.danielgimmler.enderChestHopper.instance.gui;
 
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
 import com.danielgimmler.enderChestHopper.db.enderChestLocation.EnderChestLocation;
-import com.danielgimmler.enderChestHopper.db.playerConfig.EnderChestConfig;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.inventory.Inventory;
@@ -71,6 +69,7 @@ public class EnderChestGui {
     }
 
     public void openGui() {
+        player.getLocation().getChunk().load();
         player.openInventory(playerGui);
     }
 

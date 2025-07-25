@@ -3,6 +3,7 @@ package com.danielgimmler.enderChestHopper.db.enderChestLocation;
 import com.danielgimmler.enderChestHopper.EnderChestHopper;
 import com.danielgimmler.enderChestHopper.db.ConfigManagerBase;
 import org.bukkit.Location;
+import org.bukkit.block.Hopper;
 import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.IOException;
 import java.util.*;
@@ -27,6 +28,18 @@ public class EnderChestLocationManager extends ConfigManagerBase {
         List<EnderChestLocation> list = new ArrayList<>();
         for (String k : file.getKeys(false))
             list.add(EnderChestLocation.getEnderChestLocation(main, k));
+
+        return list;
+    }
+
+    public List<Hopper> getEnderChestHoppers() throws IOException {
+        if (!fileExists()) throw new IllegalStateException("Yaml file not found!");
+
+        List<Hopper> list = new ArrayList<>();
+        for (EnderChestLocation chest : getEnderChests()) {
+            if (chest.isHopperBelow())
+                list.add(chest.getHopper());
+        }
 
         return list;
     }

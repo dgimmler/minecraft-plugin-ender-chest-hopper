@@ -15,11 +15,12 @@ import java.util.Map;
 public class EnderChestLocation {
     public EnderChestHopper main;
 
-    public final String world;
-    public final int x;
-    public final int y;
-    public final int z;
-    public final boolean hasHopper;
+    private final String world;
+    private final int x;
+    private final int y;
+    private final int z;
+    private final boolean hasHopper;
+    private final Location location;
 
     // CONSTRUCTORS
     // -----------------------------------------------------------------------------------------------------------------
@@ -32,8 +33,9 @@ public class EnderChestLocation {
         this.y = y;
         this.z = z;
         this.hasHopper = hasHopper;
+        this.location = new Location(Bukkit.getWorld(world), x, y, z);
 
-        main.logger.info("Saved ender chest at location: " + x + " " + y + " " + z + " in world " + world + ". Key: " + world + x + y + z);
+        main.logger.debug("Saved ender chest at location: " + x + " " + y + " " + z + " in world " + world + ". Key: " + world + x + y + z);
     }
 
     public EnderChestLocation(EnderChestHopper main, Location blockLocation) {
@@ -52,18 +54,24 @@ public class EnderChestLocation {
     public String getKey() { return getKey(world, x, y, z); }
     public static String getKey(String world, int x, int y, int z) { return world + x + y + z; }
 
-    // HELPERS
-    // -----------------------------------------------------------------------------------------------------------------
-
-    public boolean chestSaved() { return chestSaved(main.getEnderChestLocationManager(), getKey()); }
-    public static boolean chestSaved(EnderChestLocationManager mgr, String k) { return mgr.getYamlFile().contains(k); }
-
+    public boolean isHopperBelow() { return this.hasHopper; }
     public static boolean isHopperBelow(Location location) {
         Location below = location.clone().subtract(0, 1, 0);
         Block blockBelow = below.getBlock();
 
         return blockBelow.getType() == Material.HOPPER;
     }
+
+    public int getX() { return x; }
+    public int getY() { return y; }
+    public int getZ() { return z; }
+    public Location getLocation() { return location; }
+
+    // HELPERS
+    // -----------------------------------------------------------------------------------------------------------------
+
+    public boolean chestSaved() { return chestSaved(main.getEnderChestLocationManager(), getKey()); }
+    public static boolean chestSaved(EnderChestLocationManager mgr, String k) { return mgr.getYamlFile().contains(k); }
 
     public Hopper getHopper() throws IllegalStateException {
         if (!hasHopper) throw new IllegalStateException("Ender chest has no hopper attached");
@@ -131,7 +139,7 @@ public class EnderChestLocation {
         ));
 
         file.save(mgr.getFile());
-        main.logger.info("Saved location of Ender Chest to file");
+        main.logger.debug("Saved location of Ender Chest to file");
     }
 
     public void removeLocation() throws IOException {
@@ -166,5 +174,10 @@ public class EnderChestLocation {
         } else {
             throw new IllegalStateException("Ender chest not found: " + x + " " + y + " " + z + " in world " + world + ". Key: " + k);
         }
+
+        if (newHopperValue)
+            main.getChunkManager().addHopperChunk(location.getChunk());
+        else
+            main.getChunkManager().removeHopperChunk(location.getChunk());
     }
 }
