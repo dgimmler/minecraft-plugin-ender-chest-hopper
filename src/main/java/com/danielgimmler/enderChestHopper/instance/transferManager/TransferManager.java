@@ -87,7 +87,7 @@ public class TransferManager {
                 try {
                     task = transferTasks.get(taskIndex);
                 } catch(IndexOutOfBoundsException ex) {
-                    cancelTask(this, playerId, "Error running task. Error: " + ex.getMessage());
+                    cancelTask(this, task, playerId, "Error running task. Error: " + ex.getMessage());
 
                     return;
                 }
@@ -95,33 +95,34 @@ public class TransferManager {
 
                 // cancel runnable player is offline, has hopper transfers toggled off or task list is empty (processed)
                 if (!player.isOnline() || !currentlyProcessing.contains(playerId)) {
-                    cancelTask(this, playerId, "Player " + playerName + " is offline. Cancelling ender chest hopper.");
+                    cancelTask(this, task, playerId, "Player " + playerName + " is offline. Cancelling ender chest hopper.");
 
                     return;
-                } else if (!main.getPlayerConfigManager().getPlayerConfig(player).isHopperEnabledForChest(task.chest)) {
-                    cancelTask(this, playerId, "Player " + playerName + " toggled hopper transfers off. Cancelling ender chest hopper.");
+                } else if (!main.getPlayerConfigManager().getPlayerConfig(player).isHopperEnabledForChest(task.getChest())) {
+                    cancelTask(this, task, playerId, "Player " + playerName + " toggled hopper transfers off. Cancelling ender chest hopper.");
 
                     return;
                 } else if (transferTasks.isEmpty()) {
-                    cancelTask(this, playerId, "Transfer tasks for player " + playerName + " are complete. Cancelling ender chest hopper.");
+                    cancelTask(this, task, playerId, "Transfer tasks for player " + playerName + " are complete. Cancelling ender chest hopper.");
 
                     return;
                 }
 
+                task.reloadHopperChunks();
                 task.reloadEnderChestInventory(player);
 
                 // cancel runnable if hopper is removed
                 try {
-                    task.chest.getHopper();
+                    task.getChest().getHopper();
                 } catch(IllegalStateException ex) {
-                    cancelTask(this, playerId, "Ender chest for player " + playerName + " has been removed. Cancelling ender chest hopper.");
+                    cancelTask(this, task, playerId, "Ender chest for player " + playerName + " has been removed. Cancelling ender chest hopper.");
 
                     return;
                 }
 
                 // cancel runnable if chest inv is depleted.
                 if (task.chestIsEmpty()){
-                    cancelTask(this, playerId, "Ender chest for player " + playerName + " is empty. Cancelling ender chest hopper.");
+                    cancelTask(this, task, playerId, "Ender chest for player " + playerName + " is empty. Cancelling ender chest hopper.");
 
                     return;
                 }
@@ -134,7 +135,7 @@ public class TransferManager {
                     taskIndex++;
 
                     if (taskIndex >= transferTasks.size())
-                        cancelTask(this, playerId, "No further ender chest with hopper available. Cancelling ender chest hopper.");
+                        cancelTask(this, task, playerId, "No further ender chest with hopper available. Cancelling ender chest hopper.");
                 } else if (chestSlot >= enderChestInv.getMaxStackSize() || chestSlot < 0) {
                     main.logger.debug("Looped through all chest slots, going back to first slot...");
                     // loop back to first filled slot if all item stacks finish
@@ -151,12 +152,20 @@ public class TransferManager {
     // HELPER FUNCTIONS
     // -----------------------------------------------------------------------------------------------------------------
 
-    public void cancelTask(BukkitRunnable runnable, UUID playerId, String msg) {
+    public void cancelTask(BukkitRunnable runnable, TransferTask task, UUID playerId, String msg) {
         main.logger.trace(msg);
+
+        // cancel runnable
         runnable.cancel();
         currentlyProcessing.remove(playerId);
+
+        // cancel processing transfer
         if (debouncedTransfers.get(playerId) != null) debouncedTransfers.get(playerId).cancel();
         debouncedTransfers.remove(playerId);
+
+        // cancel force-loaded chunks
+        if (task != null) task.unloadHopperChunks();
+
         main.logger.trace("active transfers after remove: " + debouncedTransfers);
     }
 

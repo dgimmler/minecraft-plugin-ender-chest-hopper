@@ -11,23 +11,42 @@ import java.io.IOException;
 import java.util.HashMap;
 
 public class TransferTask {
-    public final EnderChestHopper main;
+    private final EnderChestHopper main;
 
-    public EnderChestLocation chest;
-    public Inventory chestInv;
-    public Inventory hopperInv;
+    private EnderChestLocation chest;
+    private Inventory chestInv;
 
     public TransferTask(EnderChestHopper main, EnderChestLocation chest, Inventory chestInv) throws IOException {
         this.main = main;
 
         this.chest = chest;
         this.chestInv = chestInv;
-        this.hopperInv = chest.getHopper().getInventory();
     }
 
     public void reloadEnderChestInventory(Player player) {
         this.chestInv = player.getEnderChest();
     }
+    public void reloadHopperChunks() {
+        // ensure hopper chunk and simulation distance is loaded
+        main.getChunkManager().addHopperChunkWithDepth(getHopperInv().getLocation().getChunk());
+    }
+    public void unloadHopperChunks() {
+        // cancel force load on hopper chunk and simulation distance
+        // // (will unload itself if no longer used ofter 30-60 seconds)
+        main.getChunkManager().removeHopperChunkWithDepth(getHopperInv().getLocation().getChunk());
+    }
+
+    // GETTERS
+    // -----------------------------------------------------------------------------------------------------------------
+    public EnderChestLocation getChest() { return this.chest; }
+
+    // HELPERS
+    // -----------------------------------------------------------------------------------------------------------------
+
+    private Inventory getHopperInv() { return chest.getHopper().getInventory(); }
+
+    // PUBLIC
+    // -----------------------------------------------------------------------------------------------------------------
 
     public int getFirstFilledSlot(Player player) {
         reloadEnderChestInventory(player);
@@ -59,11 +78,11 @@ public class TransferTask {
         oneItemStack.setAmount(1);
 
         // Try to merge this 1 item into existing stacks
-        int afterMerge = mergeWithExistingStacks(oneItemStack, hopperInv, remaining);
+        int afterMerge = mergeWithExistingStacks(oneItemStack, remaining);
 
         // If still not placed, try empty slot
         if (afterMerge > 0)
-            afterMerge = insertIntoEmptySlots(oneItemStack, hopperInv, afterMerge);
+            afterMerge = insertIntoEmptySlots(oneItemStack, afterMerge);
 
         // If at least 1 was moved, subtract from source
         if (afterMerge < 1) {
@@ -72,8 +91,8 @@ public class TransferTask {
             else chestInv.setItem(slot, chestStack);
 
             // Play transfer sound
-            Location soundLocation = hopperInv.getLocation().add(0.5, 0.5, 0.5);
-            hopperInv.getLocation().getWorld().playSound(soundLocation, Sound.BLOCK_DISPENSER_DISPENSE, 0.5F, 1.0F);
+            Location soundLocation = getHopperInv().getLocation().add(0.5, 0.5, 0.5);
+            getHopperInv().getLocation().getWorld().playSound(soundLocation, Sound.BLOCK_DISPENSER_DISPENSE, 0.5F, 1.0F);
 
             return true;
         }
@@ -82,9 +101,9 @@ public class TransferTask {
         return false;
     }
 
-    private int mergeWithExistingStacks(ItemStack chestStack, Inventory hopperInv, int remaining) {
-        for (int slot = 0; slot < hopperInv.getSize(); slot++) {
-            ItemStack hopperStack = hopperInv.getItem(slot);
+    private int mergeWithExistingStacks(ItemStack chestStack, int remaining) {
+        for (int slot = 0; slot < getHopperInv().getSize(); slot++) {
+            ItemStack hopperStack = getHopperInv().getItem(slot);
             if (hopperStack == null || hopperStack.getType() != chestStack.getType() || !hopperStack.isSimilar(chestStack))
                 continue;
 
@@ -102,12 +121,12 @@ public class TransferTask {
         return remaining;
     }
 
-    private int insertIntoEmptySlots(ItemStack fromStack, Inventory hopperInv, int remaining) {
+    private int insertIntoEmptySlots(ItemStack fromStack, int remaining) {
         if (remaining <= 0) return 0;
 
         ItemStack remainingStack = fromStack.clone();
         remainingStack.setAmount(remaining);
-        HashMap<Integer, ItemStack> leftovers = hopperInv.addItem(remainingStack);
+        HashMap<Integer, ItemStack> leftovers = getHopperInv().addItem(remainingStack);
 
         if (leftovers.containsKey(0))
             return leftovers.get(0).getAmount();

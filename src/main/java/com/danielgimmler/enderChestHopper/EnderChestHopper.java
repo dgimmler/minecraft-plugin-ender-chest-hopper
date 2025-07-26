@@ -46,4 +46,14 @@ public final class EnderChestHopper extends JavaPlugin {
     }
 
     public EnderChestLocationManager getEnderChestLocationManager() { return this.enderChestLocations; }
+
+    public boolean isPaper() {
+        try {
+            Class.forName("com.destroystokyo.paper.PaperConfig");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
 }
