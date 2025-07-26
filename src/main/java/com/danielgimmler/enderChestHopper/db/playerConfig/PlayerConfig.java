@@ -270,7 +270,8 @@ public class PlayerConfig {
         }
     }
 
-    public void removeChestFromPlayerConfig(EnderChestLocation chest) throws IOException {
+    public void removeChestFromPlayerConfig(EnderChestLocation chest) throws IOException { removeChestFromPlayerConfig(chest, player); }
+    public void removeChestFromPlayerConfig(EnderChestLocation chest, Player player) throws IOException {
         if (player == null) {
             main.logger.severe("Player not found");
 

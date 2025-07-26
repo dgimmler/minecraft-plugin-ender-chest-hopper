@@ -53,10 +53,10 @@ public class PlayerConfigManager extends ConfigManagerBase {
         playerConfigs.get(player.getUniqueId()).loadPlayerConfig(player);
     }
 
-    public void removeChestFromPlayerConfigs(EnderChestLocation chest) {
+    public void removeChestFromPlayerConfigs(EnderChestLocation chest, Player player) {
         for ( UUID i : playerConfigs.keySet()) {
             try {
-                playerConfigs.get(i).removeChestFromPlayerConfig(chest);
+                playerConfigs.get(i).removeChestFromPlayerConfig(chest, player);
             } catch (IOException e) {
                 main.logger.severe("Unable to remove chest from player " + playerConfigs.get(i).getPlayerName() + " config. Already removed?");
             }

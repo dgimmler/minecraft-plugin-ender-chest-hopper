@@ -99,7 +99,7 @@ public class EnderChestListener implements Listener {
         Location blockLocation = e.getBlock().getLocation();
 
         if (e.getBlock().getType() == Material.ENDER_CHEST) {
-            handleEnderChestBreak(blockLocation);
+            handleEnderChestBreak(blockLocation, e.getPlayer());
         } else if (e.getBlock().getType() == Material.HOPPER) {
             handleHopperBreak(blockLocation);
         }
@@ -208,7 +208,7 @@ public class EnderChestListener implements Listener {
     // CHEST BREAK FUNCTIONS
     // -----------------------------------------------------------------------------------------------------------------
 
-    private void handleEnderChestBreak(Location blockLocation) {
+    private void handleEnderChestBreak(Location blockLocation, Player player) {
         EnderChestLocation chest = new EnderChestLocation(main, blockLocation);
 
         try {
@@ -218,7 +218,7 @@ public class EnderChestListener implements Listener {
             main.logger.severe(ex.getMessage());
         }
 
-        main.getPlayerConfigManager().removeChestFromPlayerConfigs(chest);
+        main.getPlayerConfigManager().removeChestFromPlayerConfigs(chest, player);
     }
 
     private void handleHopperBreak(Location blockLocation) {
